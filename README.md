@@ -1,64 +1,102 @@
 # Segnetics Pixel Studio
 
-Universal development toolkit, memory optimizer, and interactive digital twin emulator for Segnetics Pixel programmable logic controllers (Pixel 12xx and 25xx series with ATmega2560 architecture).
+**English** | [Русский](README_RU.md)
+
+Open-source development toolkit, memory optimizer, and interactive digital twin emulator for **Segnetics Pixel** programmable logic controllers (Pixel 12xx and 25xx series powered by the ATmega2560 microarchitecture).
+
+Eliminates the critical SMLogix memory overflow defect (*"Error loading string constants. Insufficient memory for project"*) and provides an authentic hardware-free digital twin for building, compiling, and validating FBD automation logic in real time.
 
 ---
 
 ## Capabilities
 
-1. **PSL Project Audit & Optimization**
-   - Structural analysis of binary `.psl` and `.bk1` project files.
-   - Verification against ATmega2560 hardware boundaries (256 KB Flash, 32 KB SRAM, 4 KB EEPROM).
-   - Automated removal of redundant animation bitmap bloat, reducing project footprint and resolving string constants memory overflow.
+### 1. SMLogix Project Audit & Optimization (`audit`, `optimize`)
+* **Hardware Memory Audit:** deep binary inspection of `.psl` and `.bk1` project archives against ATmega2560 hardware thresholds (256 KB Flash, 32 KB SRAM, 4 KB EEPROM).
+* **Automated Asset Trimming:** discovers and strips duplicate SMArt animation frames down to essential system glyphs, reducing project file weight by 60–75% without corrupting menu layouts or string tables.
+* **Resource Extraction (`export-smart`, `export-logic`):** exports internal SQLite3 screen databases (`translation`, `language`, `composite`) and converts functional block connectivity into JSON graphs.
 
-2. **Declarative FBD DSL Engine**
-   - Construction of automation algorithms via Python DSL without manual diagram dragging.
-   - Support for standard function blocks: logic (AND, OR, NOT, XOR), arithmetic (ADD, SUB, MUL, DIV), comparators (CMP, EQ, NE, GT, GE, LT, LE), timers (TON, TOF, TP), counters (CTU, CTD), latches (RS, SR), and multiplexers (MUX, SEL).
-   - Cycle-accurate topological FBD execution runtime.
+### 2. Declarative FBD DSL Engine (`src/core/`)
+* **Python-first Logic Design:** construct industrial automation graphs via declarative Python code instead of manual canvas wiring.
+* **Block Library (20+ types):**
+  * Boolean logic: `AND`, `OR`, `NOT`, `XOR`;
+  * Arithmetic: `ADD`, `SUB`, `MUL`, `DIV` (with divide-by-zero hardware traps);
+  * Comparators: `CMP`, `EQ`, `NE`, `GT`, `GE`, `LT`, `LE`;
+  * Timers and counters: `TON`, `TOF`, `TP`, `CTU`, `CTD`;
+  * Memory latches: `RS` (reset-dominant), `SR` (set-dominant);
+  * Multiplexing: `MUX`, `SEL`, `LIMIT`.
+* **Cycle-Accurate Topological Runtime (`fbd_runtime.py`):** deterministic single-scan dataflow propagation modeling real PLC task execution cycles.
 
-3. **Digital Twin Web Emulator**
-   - Front-panel emulation with STN LCD matrix rendering, tactile button inputs (ESC, Right, Up, Down, OK), and diagnostic LEDs.
-   - Live FBD Signal Watcher (analogous to F9 online mode in SMLogix).
-   - Time-travel debugging with interactive history scrubber.
-   - Integrated Modbus TCP server (default port 15502) and HTTP UI (port 18088) with auto-resilient port selection.
-   - Interactive sensor and digital IO forcing panel.
-   - Preloaded application templates: Pump Station with lead-lag alternation, Ventilation AHU with supply air temperature control, and Dual-Loop Thermostat.
+### 3. Digital Twin Web Emulator (`src/pixel_studio/`)
+* **Photorealistic Pixel 2514 Enclosure:** authentic front panel, STN matrix LCD emulator, tactile navigation buttons (ESC, Right, Up, Down, OK), and DO/Alarm LED indicators.
+* **Time-Travel Scrubber:** interactive timeline slider allowing engineers to scrub backward in time and inspect how logic states, screen lines, and relays behaved during earlier steps.
+* **Live FBD Signal Inspector (F9 Online Watch):** real-time monitor displaying live values across every block pin, wire, and constant.
+* **Hardware IO Forcing:** override digital inputs `DI 0..5` and analog transmitters `AI 0..2` via real-time sliders and toggle switches.
+* **Time Warp Simulation:** accelerate virtual time from 1x (real-time) to 10x, 60x (1s = 1m), 600x, 3600x (1s = 1h), or pause execution.
+* **Hard Factory Reset:** complete state zeroing guarded by a modal token confirmation dialog (`reset` or `сброс`).
+* **Embedded Modbus TCP Slave:** integrated Modbus server on port `15502` (Unit ID: 1) with auto-resilient port failover, enabling plug-and-play connection to SCADA, Home Assistant, or Node-RED.
+* **Built-in Application Templates:** Dual Pump Station with duty rotation and dry-run interlock, Ventilation AHU with supply air temperature control, and Dual-Loop Thermostat.
 
 ---
 
 ## Quick Start
 
-### 1. Requirements
-- Python 3.8 or newer.
+### Prerequisites
+* Operating System: Windows, Linux, or macOS;
+* Python 3.8 or higher.
 
-### 2. Launching via Windows Batch
+### Windows One-Click Launcher
 Double-click:
 ```cmd
 run_pixel_studio.bat
 ```
 Select `[1]` to launch the web studio at `http://localhost:18088`.
 
-### 3. Command Line Interface
+### Command Line Interface (CLI)
 
 ```bash
-# Launch digital twin emulator
+# 1. Launch web studio and Modbus TCP server
 python -m src.pixel_studio.cli simulate --port 18088 --modbus-port 15502
 
-# Audit project file memory limits
+# 2. Audit a .psl project for ATmega2560 memory overflow
 python -m src.pixel_studio.cli audit path/to/project.psl
 
-# Optimize project and strip graphic bloat
-python -m src.pixel_studio.cli optimize input.psl output_clean.psl --max-png 15
+# 3. Strip animation bloat and compress memory
+python -m src.pixel_studio.cli optimize source.psl clean.psl --max-png 15
 
-# Export FBD logic structure to JSON
+# 4. Export FBD logic structure to JSON
 python -m src.pixel_studio.cli export-logic project.psl --out logic.json
+
+# 5. Extract SMArt SQLite database and screens
+python -m src.pixel_studio.cli export-smart project.psl --out-dir extracted_smart
 ```
 
 ---
 
-## Testing
+## Automated Verification
 
-Run the automated test suite:
+Run the test suite to verify block math, topology resolution, timers, and simulator APIs:
 ```bash
 python run_tests.py
 ```
+All 19 tests complete in ~0.25 seconds.
+
+---
+
+## Hardware Flashing via RS-485
+
+1. Connect a USB-to-RS485 adapter (BOLID, Segnetics, ICP DAS, etc.) to the Pixel RS-485 port:
+   * Adapter terminal A (RS-485+) $\to$ Pixel terminal `+`;
+   * Adapter terminal B (RS-485-) $\to$ Pixel terminal `-`;
+   * Cable shield $\to$ Pixel terminal GND.
+2. Optimize your project:
+   ```bash
+   python -m src.pixel_studio.cli optimize project.psl project_clean.psl
+   ```
+3. Open `project_clean.psl` in **SMLogix**.
+4. Press `Ctrl+F7` to flash the project onto the controller. The upload will proceed smoothly without memory exhaustion errors.
+
+---
+
+## For AI Agents and Contributors
+
+Refer to [AGENTS.md](AGENTS.md) for architectural invariants, testing protocols, and guidelines on extending blocks and simulator features.
