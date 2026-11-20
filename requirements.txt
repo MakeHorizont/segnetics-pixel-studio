@@ -1,0 +1,5 @@
+# Segnetics Pixel Studio Dependencies
+# Standard Python 3.8+ libraries provide HTTP server, threading, and SQLite3.
+
+# Optional Modbus testing client
+pymodbus>=3.5.0

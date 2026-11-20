@@ -1,0 +1,39 @@
+{
+  "screen": {
+    "left": 20.8,
+    "top": 34.6,
+    "width": 55.7,
+    "height": 18.0
+  },
+  "buttons_row_top": 59.5,
+  "buttons_width": 10.4,
+  "buttons_height": 11.5,
+  "buttons": {
+    "esc": {
+      "left": 18.0,
+      "top": 59.5
+    },
+    "right": {
+      "left": 29.0,
+      "top": 59.5
+    },
+    "up": {
+      "left": 40.1,
+      "top": 59.5
+    },
+    "down": {
+      "left": 51.4,
+      "top": 59.5
+    },
+    "ok": {
+      "left": 62.6,
+      "top": 59.5
+    }
+  },
+  "alarm": {
+    "left": 74.9,
+    "top": 62.0,
+    "width": 1.78,
+    "height": 9.5
+  }
+}
